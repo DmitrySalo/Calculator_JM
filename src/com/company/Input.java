@@ -4,20 +4,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public abstract class Input {
+abstract class Input {
 
-    private String expression;
-    protected static String function;
-    protected static String firstValue;
-    protected static String secondValue;
-    protected static final int FUNCTION_POS = 1;
-    protected static final int FIRST_NUM_POS = 0;
-    protected static final int SEC_NUM_POS = 2;
+    private String expression; // Ссылка на введённое с консоли setExpression выражение.
+    protected String[] expElements; // Ссылка на значения элементов введённого выражения.
 
     protected void input() throws IOException {
         printInfo();
         setExpression();
-        setValues(expression);
+        setExpElements(expression); // Разбиваем expression на подстроки и инициализируем значениями этих подстрок массив строк.
     }
 
     private void setExpression() throws IOException {
@@ -28,11 +23,8 @@ public abstract class Input {
         reader.close();
     }
 
-    private void setValues(String expression){
-        String[] expElements = expression.split(" ");
-        firstValue = expElements[FIRST_NUM_POS];
-        secondValue = expElements[SEC_NUM_POS];
-        function = expElements[FUNCTION_POS];
+    private void setExpElements(String expression){
+        expElements = expression.split(" ");
 
         try {
             if (expElements.length != 3) {
@@ -56,7 +48,7 @@ public abstract class Input {
 
     private void checkExpression(){
         try {
-            if (!expression.matches("[0-9IVXCLM /*+-]+")) {
+            if (!expression.matches("[0-9IVXLCDM /*+-]+")) {
                 throw new IOException("Неверно введённое выражение.\nПрограмма завершена.");
             } else if (expression.startsWith(" ")) {
                 throw new IOException("Пробелы в начале выражения не допускаются.\nПрограмма завершена.");
@@ -67,4 +59,3 @@ public abstract class Input {
         }
     }
 }
-

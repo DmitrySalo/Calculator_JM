@@ -2,61 +2,63 @@ package com.company;
 
 import java.io.IOException;
 
-import static com.company.RomanNumbers.arabToRoman;
-
-public abstract class Operations extends Input {
+abstract class Operations extends Input {
 
     private int firstNum, secondNum, result;
-    private static int countOfTriggers;
+    private static int countOfTriggers; // Счётчик триггеров при работе с римскими числами.
 
     protected void operations() throws IOException {
         input();
-        setFirstNum(firstValue, FIRST_NUM_POS);
-        setSecondNum(secondValue, SEC_NUM_POS);
+        setFirstNum(expElements[0]); // Позиции "0" в массиве expElements соответствует первое число в expression.
+        setSecondNum(expElements[2]); // Позиции "2" в массиве expElements соответствует второе число в expression.
         getResult();
     }
 
-    private void setFirstNum(String arg, int numPos) {
-        if (arg.matches("[IVXLCDM]+")){
-            arg = romanToArab(arg, numPos);
-            countOfTriggers++;
+    private void setFirstNum(String arg) {
+        if (arg.matches("[IVXLCDM]+")) {
+            arg = romanToArab(arg, 0);
+            countOfTriggers++; // Счётчик срабатывает, если элемент expElements соответствует регулярному выражению.
         }
 
         firstNum = Integer.parseInt(arg);
 
-        checkNum(arg, numPos);
+        checkNum(arg, 0);
     }
 
-    private void setSecondNum(String arg, int numPos) {
-        if (arg.matches("[IVXLCDM]+")){
-            arg = romanToArab(arg, numPos);
+    private void setSecondNum(String arg) {
+        if (arg.matches("[IVXLCDM]+")) {
+            arg = romanToArab(arg, 2);
             countOfTriggers++;
         }
 
         secondNum = Integer.parseInt(arg);
 
-        checkNum(arg, numPos);
+        checkNum(arg, 2);
     }
 
-    private void getResult(){
-        switch (function){
-            case "+": result = firstNum + secondNum; break;
-            case "-": result = firstNum - secondNum; break;
-            case "*": result = firstNum * secondNum; break;
-            case "/": result = firstNum / secondNum;
+    private void getResult() {
+        switch (expElements[1]) {
+            case "+":
+                result = firstNum + secondNum; break;
+            case "-":
+                result = firstNum - secondNum; break;
+            case "*":
+                result = firstNum * secondNum; break;
+            case "/":
+                result = firstNum / secondNum;
         }
 
         checkCountOfTriggers();
 
         if (countOfTriggers == 2) {
             checkRomanResult();
-            System.out.println("Результат: " + arabToRoman(result));
+            System.out.println("Результат: " + RomanNumbers.arabToRoman(result));
         } else {
             System.out.println("Результат: " + result);
         }
     }
 
-    private String romanToArab(String number, int numPos) {
+    private String romanToArab(String number, int numElement) {
         String[] romanNum = {"I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"};
         int numTrigger = 0;
         for (int i = 0; i < romanNum.length; i++) {
@@ -66,16 +68,18 @@ public abstract class Operations extends Input {
             }
         }
 
-        checkRomanNum(numPos, numTrigger);
+        checkRomanNum(numElement, numTrigger);
 
         return number;
     }
 
-    private void checkNum(String arg, int numPos){
-        String num = (numPos == 0) ? "первого" : "второго";
+    // Переменная numElement указывает на номер позиции в expElements.
+    // Она введена для более гибкой работы с исключениями относительно первого и второго чисел выражения.
+    private void checkNum(String arg, int numElement) {
+        String num = (numElement == 0) ? "первого" : "второго";
         try {
-            if(isIncorrectValue(Integer.parseInt(arg))){
-                throw new IOException("Неверное значение " +  num + " числа.\nПрограмма завершена.");
+            if (isIncorrectValue(Integer.parseInt(arg))) {
+                throw new IOException("Неверное значение " + num + " числа.\nПрограмма завершена.");
             }
         } catch (IOException ex) {
             System.err.println(ex.getMessage());
@@ -83,16 +87,19 @@ public abstract class Operations extends Input {
         }
     }
 
+    // Метод проверяющий арабские числа на несоответствие указанному диапазону значений.
     private boolean isIncorrectValue(int number) {
         return (1 > number || number > 10);
     }
 
+    // Исключение вызывается при попытке одновременно ввести в состав выражения римское и арабское число.
+    // Как правило, это происходит при условии countOfTriggers == 1.
     private void checkRomanNum(int numPos, int numTrigger) {
         int localValue = 0;
         String num = (localValue == numPos) ? "первого" : "второго";
         if (numTrigger == 0) {
             try {
-                throw new IOException("Неверное значение " +  num + " числа.\nПрограмма завершена.");
+                throw new IOException("Неверное значение " + num + " числа.\nПрограмма завершена.");
             } catch (IOException ex) {
                 System.err.println(ex.getMessage());
                 System.exit(0);
@@ -100,9 +107,9 @@ public abstract class Operations extends Input {
         }
     }
 
-    private void checkCountOfTriggers(){
+    private void checkCountOfTriggers() {
         try {
-            if (countOfTriggers == 1){
+            if (countOfTriggers == 1) {
                 throw new IOException("Калькулятор умеет работать только с арабскими или римскими цифрами одновременно.\nПрограмма завершена.");
             }
         } catch (IOException ex) {
@@ -123,6 +130,27 @@ public abstract class Operations extends Input {
             System.exit(0);
         }
     }
+
+    private enum RomanNumbers {
+        I(1), IV(4), V(5), IX(9), X(10),
+        XL(40), L(50), XC(90), C(100);
+
+        private final int ARAB_NUM;
+
+        RomanNumbers(int arabNum) {
+            this.ARAB_NUM = arabNum;
+        }
+
+        protected static String arabToRoman(int number) {
+            StringBuilder romanNumbers = new StringBuilder();
+            RomanNumbers[] numbers = RomanNumbers.values();
+            for (int i = numbers.length - 1; i >= 0; i--) {
+                while (number >= numbers[i].ARAB_NUM) {
+                    romanNumbers.append(numbers[i]);
+                    number = number - numbers[i].ARAB_NUM;
+                }
+            }
+            return romanNumbers.toString();
+        }
+    }
 }
-
-
