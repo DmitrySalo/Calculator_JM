@@ -18,12 +18,12 @@ abstract class Input {
     private void setExpression() throws IOException {
         System.out.print("Введите выражение: ");
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            expression = reader.readLine();
-            checkExpression();
+        expression = reader.readLine();
+        checkExpression();
         reader.close();
     }
 
-    private void setExpElements(String expression){
+    private void setExpElements(String expression) {
         expElements = expression.split(" ");
 
         try {
@@ -46,8 +46,9 @@ abstract class Input {
         System.out.println(info);
     }
 
-    private void checkExpression(){
+    private void checkExpression() {
         try {
+            // В регулярном выражении присутствует большее кол-во входных значений для более гибкой работы с исключениями.
             if (!expression.matches("[0-9IVXLCDM /*+-]+")) {
                 throw new IOException("Неверно введённое выражение.\nПрограмма завершена.");
             } else if (expression.startsWith(" ")) {
